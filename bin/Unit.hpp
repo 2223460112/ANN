@@ -17,12 +17,14 @@ using namespace Eigen;
 //This is the Base type witch includes most function that may be used;
 class UnitBase {
 protected:
-	MatrixXd Input, Output; //Input and output must be a Matrix;
+	MatrixXd *Input, *Output; //Input and output must be a Matrix;
+	uint32_t OutputPos[2]; //record where to put your result
 public:
-	virtual void SetInput(MatrixXd _Input) { //Read your unit's input data from the forward unit's output data;
+	void SetInput(MatrixXd *_Input) {
+		Input = _Input;
 	}
-	MatrixXd GetOutput() { //fixed function,no need to implement it;
-		return Output;
+	void SetOutput(MatrixXd *_Output, uint32_t _Pos[2]) {
+		Output = _Output, OutputPos = _Pos;
 	}
 	virtual void calc() { //calculate the Input,result should be put into Output;
 	}
@@ -33,10 +35,13 @@ public:
 	virtual ~UnitBase() { //virtual destructor;
 	}
 };
-class InputUnit: public UnitBase {
+class DNNOutputUnit: public UnitBase {
 protected:
-	UnitBase*** DownStream;
-	uint32_t** DownStreamRK[2];
+	UnitBase** UpStream;
+	uint32_t* UpStreamRK;
+	uint32_t UpStreamSize;
+protected:
+	double bias, **W;
 public:
 };
 
