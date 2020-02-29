@@ -14,6 +14,6 @@ CFLAGS += -std=c++11
 CFLAGS += -W -Wall
 
 precompile:
-	$(CC) bin/Unit.hpp $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-unused-parameter -o debug/Unit.gch
+	g++ bin/Unit.hpp $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-unused-parameter -o debug/Unit.gch
 clean:
 	rm -fr debug/Unit.gch
