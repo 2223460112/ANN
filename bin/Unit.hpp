@@ -21,13 +21,12 @@ using namespace Eigen;
 class UnitBase {
 protected:
 	MatrixXd *Input, *Output; //Input and output must be a Matrix;
-	uint32_t OutputPos[2]; //record where to put your result
-	StepFunc::func step; //as it's name
+	uint32_t OutputPos[2]; //record where to put your result;
+	StepFunc::func step; //as it's name;
 	LossFunc::func loss;
 
 protected:
-	std::vector<UnitBase*> Downstream, Upstream;
-	std::vector<uint32_t> DownstreamRK[2], UpstreamRK[2]; //RK stands for Rank,record where self is to it's D/U stream unit
+	std::vector<UnitBase*> *Downstream, *Upstream;
 
 protected:
 	MatrixXd W;
@@ -39,7 +38,10 @@ public:
 	double Lossd; //dE/dSum
 
 public:
-	void Init(short _type, MatrixXd *_Input, MatrixXd *_Output, uint32_t _Pos[]) {
+	UnitBase(short _type, const MatrixXd *_Input,
+			const std::vector<UnitBase*> *_Upstream, const MatrixXd *_Output,
+			const std::vector<UnitBase*> *_Downstream, const uint32_t _Pos[],
+			StepFunc::func _step, LossFunc::func _loss) {
 		type = _type;
 		Input = _Input;
 		Output = _Output, OutputPos = _Pos;
@@ -47,9 +49,12 @@ public:
 		W *= Weight_Init_Range;
 		bias = ((double) rand() / RAND_MAX * 2 - 1) * Weight_Init_Range;
 
-		//working here
-	}
-	virtual void init(short type, ...) {
+		Downstream = _Downstream;
+		Upstream = _Upstream;
+
+		Sumd = Outd = Lossd = 0;
+
+		step = _step, loss = _loss;
 	}
 
 public:
@@ -58,6 +63,9 @@ public:
 	virtual void train() { //train and calculate delta Weight;
 	}
 	virtual void modify() { //used the delta Weight to modify your unit's weight;
+	}
+	virtual double returnWeightof(const uint32_t _Pos[]) {
+		return 0.0;
 	}
 
 public:
