@@ -11,7 +11,7 @@
 #include <vector>
 #include <cstdarg>
 
-#include <Eigen\Eigen>
+#include <Eigen/Eigen>
 using namespace Eigen;
 
 #include "ANNConstantDef.h"
@@ -21,7 +21,7 @@ using namespace Eigen;
 class UnitBase {
 protected:
 	MatrixXd *Input, *Output; //Input and output must be a Matrix;
-	uint32_t OutputPos[2]; //record where to put your result;
+	std::pair<uint32_t,uint32_t> OutputPos; //record where to put your result;
 	StepFunc::func step; //as it's name;
 	LossFunc::func loss;
 
@@ -38,9 +38,9 @@ public:
 	double Lossd; //dE/dSum
 
 public:
-	UnitBase(short _type, const MatrixXd *_Input,
-			const std::vector<UnitBase*> *_Upstream, const MatrixXd *_Output,
-			const std::vector<UnitBase*> *_Downstream, const uint32_t _Pos[],
+	UnitBase(short _type, MatrixXd *_Input,
+			std::vector<UnitBase*> *_Upstream, MatrixXd *_Output,
+			std::vector<UnitBase*> *_Downstream, std::pair<uint32_t,uint32_t> _Pos,
 			StepFunc::func _step, LossFunc::func _loss) {
 		type = _type;
 		Input = _Input;
@@ -64,7 +64,7 @@ public:
 	}
 	virtual void modify() { //used the delta Weight to modify your unit's weight;
 	}
-	virtual double returnWeightof(const uint32_t _Pos[]) {
+	virtual double returnWeightof(std::pair<uint32_t,uint32_t> _Pos) {
 		return 0.0;
 	}
 

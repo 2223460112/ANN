@@ -22,6 +22,8 @@ private:
 	double li, lo;
 	d2dfunc *_f, *_d;
 public:
+	func() {
+	}
 	func(d2dfunc *fi, d2dfunc *di) {
 		li = lo = 0.0;
 		_f = fi, _d = di;
@@ -166,6 +168,8 @@ namespace LossFunc {
 class func {
 public:
 	d2dfunc *_f;
+	func(){
+	}
 	func(d2dfunc *fi) {
 		_f = fi;
 	}
