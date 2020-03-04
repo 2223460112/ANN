@@ -18,15 +18,15 @@ using namespace Eigen;
 #include "Functions.hpp"
 
 //This is the Base type witch includes most function that may be used;
-class UnitBase {
+class BaseUnit {
 protected:
 	MatrixXd *Input, *Output; //Input and output must be a Matrix;
-	std::pair<uint32_t,uint32_t> OutputPos; //record where to put your result;
+	std::pair<uint32_t, uint32_t> OutputPos; //record where to put your result;
 	StepFunc::func step; //as it's name;
 	LossFunc::func loss;
 
 protected:
-	std::vector<UnitBase*> *Downstream, *Upstream;
+	std::vector<BaseUnit*> *Downstream, *Upstream;
 
 protected:
 	MatrixXd W;
@@ -38,10 +38,10 @@ public:
 	double Lossd; //dE/dSum
 
 public:
-	UnitBase(short _type, MatrixXd *_Input,
-			std::vector<UnitBase*> *_Upstream, MatrixXd *_Output,
-			std::vector<UnitBase*> *_Downstream, std::pair<uint32_t,uint32_t> _Pos,
-			StepFunc::func _step, LossFunc::func _loss) {
+	BaseUnit(short _type, MatrixXd *_Input, std::vector<BaseUnit*> *_Upstream,
+			MatrixXd *_Output, std::vector<BaseUnit*> *_Downstream,
+			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
+			LossFunc::func _loss) {
 		type = _type;
 		Input = _Input;
 		Output = _Output, OutputPos = _Pos;
@@ -62,18 +62,37 @@ public:
 	}
 	virtual void train() { //train and calculate delta Weight;
 	}
+	virtual void train(double targetV) { //for output unit
+	}
 	virtual void modify() { //used the delta Weight to modify your unit's weight;
 	}
-	virtual double returnWeightof(std::pair<uint32_t,uint32_t> _Pos) {
+	virtual double returnWeightof(std::pair<uint32_t, uint32_t> _Pos) {
 		return 0.0;
 	}
 
 public:
-	virtual ~UnitBase() { //virtual destructor;
+	virtual ~BaseUnit() { //virtual destructor;
 	}
 };
-class DNNOutputUnit: public UnitBase {
+class DNNOutputUnit: public BaseUnit {
 public:
+	DNNOutputUnit(short _type, MatrixXd *_Input,
+			std::vector<BaseUnit*> *_Upstream, MatrixXd *_Output,
+			std::vector<BaseUnit*> *_Downstream,
+			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
+			LossFunc::func _loss) :
+			BaseUnit(_type, _Input, _Upstream, _Output, _Downstream, _Pos,
+					_step, _loss) {
+	}
+public:
+	void calc() {
+		Sumd = (W.array() * Input->array()).sum();
+		Outd = step.f(Sumd);
+		(*Output)(OutputPos.first, OutputPos.second) = Outd;
+	}
+	void train(double targetV) {
+		Lossd=loss.f(targetV,Outd)*step.d(Outd);
+	}
 };
 
 #endif /* Unit_HPP_ */

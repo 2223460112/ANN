@@ -19,8 +19,8 @@ namespace StepFunc {
 //li refers to last_in
 class func {
 private:
-	double li, lo;
-	d2dfunc *_f, *_d;
+	double li=0, lo=0;
+	d2dfunc *_f=NULL, *_d=NULL;
 public:
 	func() {
 	}
@@ -166,8 +166,8 @@ public:
 
 namespace LossFunc {
 class func {
+	d2dfunc *_f=NULL;
 public:
-	d2dfunc *_f;
 	func(){
 	}
 	func(d2dfunc *fi) {
