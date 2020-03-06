@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <cstdarg>
+#include <cstdio>
 
 #include <Eigen/Eigen>
 using namespace Eigen;
@@ -73,8 +74,28 @@ public:
 	}
 public:
 	virtual void read(FILE *file) {
+		for(int i=0;i<size_long_int;i++)
+			*((unsigned char*)&Input->rows()+i)=getc(file);
+		for(int i=0;i<size_long_int;i++)
+			*((unsigned char*)&Input->cols()+i)=getc(file);
+		for(int i=0;i<Input->rows();i++)
+			for(int j=0;j<Input->cols();j++)
+				for(int k=0;k<size_double;k++)
+					*((unsigned char*)W(i,j)+k)=getc(file);
+		for(int k=0;k<size_double;k++)
+			*((unsigned char*)bias+k)=getc(file);
 	}
 	virtual void write(FILE *file) {
+		for(int i=0;i<size_long_int;i++)
+			putc(*((unsigned char*)&Input->rows()+i),file);
+		for(int i=0;i<size_long_int;i++)
+			putc(*((unsigned char*)&Input->cols()+i),file);
+		for(int i=0;i<Input->rows();i++)
+			for(int j=0;j<Input->cols();j++)
+				for(int k=0;k<size_double;k++)
+					putc(*((unsigned char*)W(i,j)+k),file);
+		for(int k=0;k<size_double;k++)
+			putc(*((unsigned char*)bias+k),file);
 	}
 
 public:
@@ -101,13 +122,13 @@ public:
 	}
 	void calcdW() {
 		modify_count++;
-		for (int i = 0; i < dW.cols(); i++)
-			for (int j = 0; i < dW.rows(); j++)
+		for (int i = 0; i < dW.rows(); i++)
+			for (int j = 0; i < dW.cols(); j++)
 				dW(i, j) += Learnrate * (*Input)(i, j) * Lossd;
 	}
 	void modify() {
-		for (int i = 0; i < dW.cols(); i++)
-			for (int j = 0; i < dW.rows(); j++) {
+		for (int i = 0; i < dW.rows(); i++)
+			for (int j = 0; i < dW.cols(); j++) {
 				W(i, j) += dW(i, j) / modify_count;
 				dW(i, j) = 0;
 			}
