@@ -5,10 +5,10 @@
  *      Author: Z2J
  */
 
-#include <cstdlib>
-
 #ifndef ANNCONSTANTDEF_H_
 #define ANNCONSTANTDEF_H_
+
+#include <cstdlib>
 
 #define elu_alpha 0.25
 
@@ -22,12 +22,6 @@
 #define r_relu_test 0.5
 #define r_relu_r (((double)rand()/RAND_MAX)*(r_relu_upperbound-r_relu_lowerbound)+r_relu_lowerbound)
 
-
 #define Weight_Init_Range 0.05
-
-#define InputUnit_type 0
-#define InnerUnit_type 1
-#define OutputUnit_type 2
-
 
 #endif /* ANNCONSTANTDEF_H_ */

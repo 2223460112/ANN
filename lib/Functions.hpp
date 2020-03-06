@@ -11,7 +11,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include "ANNConstantDef.h"
+#include "../lib/ANNConstantDef.h"
 
 typedef double d2dfunc(double, double&);
 
@@ -19,8 +19,8 @@ namespace StepFunc {
 //li refers to last_in
 class func {
 private:
-	double li=0, lo=0;
-	d2dfunc *_f=NULL, *_d=NULL;
+	double li = 0, lo = 0;
+	d2dfunc *_f = NULL, *_d = NULL;
 public:
 	func() {
 	}
@@ -166,9 +166,9 @@ public:
 
 namespace LossFunc {
 class func {
-	d2dfunc *_f=NULL;
+	d2dfunc *_f = NULL;
 public:
-	func(){
+	func() {
 	}
 	func(d2dfunc *fi) {
 		_f = fi;
@@ -184,5 +184,7 @@ inline double cross_entropy(double y, double a) {
 	return (y - a) / (1 - a) / a;
 }
 }
+
+const LossFunc::func empty_loss_func;
 
 #endif /* FUNCTIONS_HPP_ */
