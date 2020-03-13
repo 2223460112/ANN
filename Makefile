@@ -18,6 +18,12 @@ precompile:
 clean:
  ifeq ($(OS),Windows_NT)
  	del debug/compile.o
+ 	del debug/test.exe
  else
 	rm -fr debug/compile.o
+	rm -fr debug/test
+	rm -fr test.dSYM
  endif
+ 
+test:
+	g++ debug/test.cpp $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o debug/test
