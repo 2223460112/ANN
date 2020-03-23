@@ -13,7 +13,7 @@
 
 class UnitPool{
 public:
-	std::vector<std::vector<std::vector<BaseUnit*>>> Pool;
+	std::vector<std::vector<std::vector<BaseUnit>>> Pool;
 public:
 	uint32_t newNet(){
 		Pool.resize(Pool.size()+1);

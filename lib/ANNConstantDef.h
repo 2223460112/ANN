@@ -24,7 +24,7 @@
 
 #define Weight_Init_Range 0.05
 
-static size_t size_long_int=4;
-static size_t size_double=8;
+#define size_long_int 4
+#define size_double 8
 
 #endif /* ANNCONSTANTDEF_H_ */

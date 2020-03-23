@@ -21,7 +21,6 @@ using namespace Eigen;
 class BaseUnit {
 protected:
 	MatrixXd *Input, *Output; //Input and output must be a Matrix;
-	std::pair<uint32_t, uint32_t> OutputPos; //record where to put your result;
 	StepFunc::func step; //as it's name;
 	LossFunc::func loss;
 
@@ -35,8 +34,10 @@ protected:
 	uint32_t modify_count;
 public:
 	double Lossd; //dE/dSum
+	std::pair<uint32_t, uint32_t> OutputPos; //record where to put your result;
 
 public:
+	BaseUnit(){}
 	BaseUnit(MatrixXd *_Input, std::vector<BaseUnit> *_Upstream,
 			MatrixXd *_Output, std::vector<BaseUnit> *_Downstream,
 			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
@@ -124,7 +125,7 @@ public:
 public:
 	void train() {
 		Lossd = 0;
-		for (int u = 0; u < Downstream->size(); u++)
+		for (uint32_t u = 0; u < Downstream->size(); u++)
 			Lossd += (*Downstream)[u].returnWeightof(OutputPos)
 					* (*Downstream)[u].Lossd;
 		Lossd *= -step.d(Outd);

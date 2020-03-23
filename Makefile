@@ -10,11 +10,19 @@ else
 	$(error Build mode $(BUILD_MODE) not supported by this Makefile)
 endif
 
+CC=g++
+ifneq ($(OS),Windows_NT)
+    CC=/usr/local/bin/g++-9
+endif
+ 
 CFLAGS += -std=c++11
 CFLAGS += -Wall
 
+Dep = eigen3
+PKG-FLAGS =	$$(/usr/local/bin/pkg-config --libs --cflags $(Dep))
+
 precompile:
-	g++ -c debug/compile.cpp $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-unused-parameter -o debug/compile.o
+	$(CC) -c debug/compile.cpp $(PKG-FLAGS) $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-unused-parameter -o debug/compile.o
 clean:
  ifeq ($(OS),Windows_NT)
  	del debug/compile.o
@@ -26,4 +34,4 @@ clean:
  endif
  
 test:
-	g++ debug/test.cpp $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o debug/test
+	$(CC) debug/test.cpp $(PKG-FLAGS) $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o debug/test

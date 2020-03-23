@@ -1,4 +1,6 @@
-#include<bits/stdc++.h>
+#include <ctime>
+#include <cstdio>
+#include <vector>
 using namespace std;
 int main(){
 	auto time0=clock();
