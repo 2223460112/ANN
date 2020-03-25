@@ -27,4 +27,7 @@
 #define size_long_int 4
 #define size_double 8
 
+#define __DNN_OUTPUT__ 0
+#define __DNN_INNER__ 1
+
 #endif /* ANNCONSTANTDEF_H_ */

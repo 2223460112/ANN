@@ -16,7 +16,7 @@ ifneq ($(OS),Windows_NT)
 endif
  
 CFLAGS += -std=c++11
-CFLAGS += -Wall
+CFLAGS += -W -Wall
 
 Dep = eigen3
 PKG-FLAGS =	$$(/usr/local/bin/pkg-config --libs --cflags $(Dep))
@@ -34,4 +34,4 @@ clean:
  endif
  
 test:
-	$(CC) debug/test.cpp $(PKG-FLAGS) $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o debug/test
+	$(CC) debug/test.cpp $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o debug/test

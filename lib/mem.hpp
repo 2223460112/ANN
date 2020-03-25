@@ -1,8 +1,8 @@
 /*
  * mem.hpp
  *
- *  Created on: 2020.3.13
- *      Author: z2j
+ *  Created on: 20200313
+ *      Author: Z2J
  */
 
 #ifndef LIB_MEM_HPP_
@@ -14,9 +14,11 @@
 class UnitPool{
 public:
 	std::vector<std::vector<std::vector<BaseUnit>>> Pool;
+	std::vector<std::vector<std::vector<BaseUnit>*>> UDlist;
 public:
 	uint32_t newNet(){
 		Pool.resize(Pool.size()+1);
+		UDlist.resize(UDlist.size()+1);
 		return Pool.size()-1;
 	}
 	uint32_t newLayer(uint32_t Net){
@@ -26,6 +28,10 @@ public:
 	uint32_t newUnit(uint32_t Net,uint32_t Layer){
 		Pool[Net][Layer].resize(Pool[Net][Layer].size()+1);
 		return Pool[Net][Layer].size()-1;
+	}
+	uint32_t UpdateToUDlist(uint32_t Net,uint32_t Layer){
+		UDlist[Net].push_back(&Pool[Net][Layer]);
+		return UDlist[Net].size()-1;
 	}
 };
 

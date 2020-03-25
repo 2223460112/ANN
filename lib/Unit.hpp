@@ -37,7 +37,8 @@ public:
 	std::pair<uint32_t, uint32_t> OutputPos; //record where to put your result;
 
 public:
-	BaseUnit(){}
+	BaseUnit() {
+	}
 	BaseUnit(MatrixXd *_Input, std::vector<BaseUnit> *_Upstream,
 			MatrixXd *_Output, std::vector<BaseUnit> *_Downstream,
 			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
@@ -58,6 +59,11 @@ public:
 
 		step = _step, loss = _loss;
 	}
+	virtual void FIXUDlist(std::vector<BaseUnit> *_Upstream,
+			std::vector<BaseUnit> *_Downstream) {
+		Downstream = _Downstream;
+		Upstream = _Upstream;
+	}
 
 public:
 	virtual void calc() { //calculate the Input,result should be put into Output;
@@ -76,15 +82,15 @@ public:
 public:
 	virtual ~BaseUnit() { //virtual destructor;
 	}
-};
+}
+;
 class DNNOutputUnit: public BaseUnit {
 public:
 	DNNOutputUnit(MatrixXd *_Input, std::vector<BaseUnit> *_Upstream,
-			MatrixXd *_Output, std::vector<BaseUnit> *_Downstream,
-			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
-			LossFunc::func _loss, double _Learnrate) :
-			BaseUnit(_Input, _Upstream, _Output, _Downstream, _Pos, _step,
-					_loss, _Learnrate) {
+			MatrixXd *_Output, std::pair<uint32_t, uint32_t> _Pos,
+			StepFunc::func _step, LossFunc::func _loss, double _Learnrate) :
+			BaseUnit(_Input, _Upstream, _Output, NULL, _Pos, _step, _loss,
+					_Learnrate) {
 	}
 public:
 	void calc() {
@@ -119,8 +125,9 @@ public:
 			MatrixXd *_Output, std::vector<BaseUnit> *_Downstream,
 			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
 			double _Learnrate) :
-			DNNOutputUnit(_Input, _Upstream, _Output, _Downstream, _Pos, _step,
+			DNNOutputUnit(_Input, _Upstream, _Output, _Pos, _step,
 					empty_loss_func, _Learnrate) {
+		Downstream = _Downstream;
 	}
 public:
 	void train() {

@@ -2,13 +2,11 @@
 #include <cstdio>
 #include <vector>
 using namespace std;
+vector<int> a;
 int main(){
-	auto time0=clock();
-	vector<int> t;
-	for(int i=0;i<1000000;i++)t.resize(t.size()+1);
-	printf("%lu\n",clock()-time0);
+	for(int i=0;i<100000;i++){
+		a.push_back(1);
+		printf("%u\n",a.begin());
+	}
 	return 0;
 }
-
-
-
