@@ -8,14 +8,10 @@
 #ifndef UNIT_HPP_
 #define UNIT_HPP_
 
-#include <vector>
 #include <cstdarg>
 #include <cstdio>
 
 #include "../lib/mem.hpp"
-
-#include <Eigen/Eigen>
-using namespace Eigen;
 
 #include "../lib/Functions.hpp"
 
@@ -28,7 +24,7 @@ protected:
 	LossFunc::func loss;
 
 protected:
-	uint32_t Downstream, Upstream;
+	uint32_t Downstream;
 
 protected:
 	MatrixXd W, dW;
@@ -42,8 +38,7 @@ public:
 public:
 	BaseUnit() {
 	}
-	BaseUnit(UnitPool *_Pool, uint32_t _Input, uint32_t _Upstream,
-			uint32_t _Output, uint32_t _Downstream,
+	BaseUnit(UnitPool *_Pool, uint32_t _Input, uint32_t _Output,
 			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
 			LossFunc::func _loss, double _Learnrate) {
 		Pool = _Pool;
@@ -56,16 +51,14 @@ public:
 		dW.setZero(Pool->Mats[Input].rows(), Pool->Mats[Input].cols());
 		bias = ((double) rand() / RAND_MAX * 2 - 1) * Weight_Init_Range;
 
-		Downstream = _Downstream;
-		Upstream = _Upstream;
-
 		Sumd = Outd = Lossd = 0;
 
 		step = _step, loss = _loss;
+
+		Downstream=-1;
 	}
-	virtual void FIXUDlist(uint32_t _Upstream, uint32_t _Downstream) {
+	virtual void FIXDlist(uint32_t _Downstream) {
 		Downstream = _Downstream;
-		Upstream = _Upstream;
 	}
 
 public:
@@ -89,11 +82,10 @@ public:
 ;
 class DNNOutputUnit: public BaseUnit {
 public:
-	DNNOutputUnit(UnitPool *Pool, uint32_t _Input, uint32_t _Upstream,
-			uint32_t _Output, std::pair<uint32_t, uint32_t> _Pos,
-			StepFunc::func _step, LossFunc::func _loss, double _Learnrate) :
-			BaseUnit(Pool, _Input, _Upstream, _Output, -1, _Pos, _step, _loss,
-					_Learnrate) {
+	DNNOutputUnit(UnitPool *Pool, uint32_t _Input, uint32_t _Output,
+			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
+			LossFunc::func _loss, double _Learnrate) :
+			BaseUnit(Pool, _Input, _Output, _Pos, _step, _loss, _Learnrate) {
 	}
 public:
 	void calc() {
@@ -124,20 +116,19 @@ public:
 };
 class DNNInnerUnit: public DNNOutputUnit {
 public:
-	DNNInnerUnit(UnitPool *Pool, uint32_t _Input, uint32_t _Upstream,
-			uint32_t _Output, uint32_t _Downstream,
-			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
-			double _Learnrate) :
-			DNNOutputUnit(Pool, _Input, _Upstream, _Output, _Pos, _step,
-					empty_loss_func, _Learnrate) {
-		Downstream = _Downstream;
+	DNNInnerUnit(UnitPool *Pool, uint32_t _Input, uint32_t _Output,
+			std::pair<uint32_t, uint32_t> _Pos,
+			StepFunc::func _step, double _Learnrate) :
+			DNNOutputUnit(Pool, _Input, _Output, _Pos, _step, empty_loss_func,
+					_Learnrate) {
+		Downstream = -1;
 	}
 public:
 	void train() {
 		Lossd = 0;
-		for (uint32_t u = 0; u < Pool->UDlist[Downstream]->size(); u++)
-			Lossd += (*Pool->UDlist[Downstream])[u].returnWeightof(OutputPos)
-					* (*Pool->UDlist[Downstream])[u].Lossd;
+		for (uint32_t u = 0; u < Pool->Dlist[Downstream]->size(); u++)
+			Lossd += (*Pool->Dlist[Downstream])[u].returnWeightof(OutputPos)
+					* (*Pool->Dlist[Downstream])[u].Lossd;
 		Lossd *= -step.d(Outd);
 	}
 };

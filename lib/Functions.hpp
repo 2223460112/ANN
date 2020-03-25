@@ -11,7 +11,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include "../lib/ANNConstantDef.h"
+#include "ANNConstantDef.hpp"
 
 typedef double d2dfunc(double, double&);
 

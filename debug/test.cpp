@@ -1,12 +1,20 @@
 #include <ctime>
 #include <cstdio>
 #include <vector>
+#include <cstdlib>
 using namespace std;
-vector<int> a;
+double a=114514.1919810,b;
 int main(){
-	for(int i=0;i<100000;i++){
-		a.push_back(1);
-		printf("%u\n",a.begin());
+	freopen("./testout","wb",stdin);
+	for(uint32_t i=0;i<sizeof(double);i++){
+		putchar((unsigned char)(&a)[i]);
 	}
+	fclose(stdin);
+	freopen("./testout","rb",stdout);
+	for(uint32_t i=0;i<sizeof(double);i++){
+		(&a)[i]=getc(stdin);
+	}
+	fclose(stdout);
+	printf("%lf\n",b);
 	return 0;
 }
