@@ -12,6 +12,8 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include "../lib/mem.hpp"
+
 #include <Eigen/Eigen>
 using namespace Eigen;
 
@@ -20,12 +22,13 @@ using namespace Eigen;
 //This is the Base type witch includes most function that may be used;
 class BaseUnit {
 protected:
-	MatrixXd *Input, *Output; //Input and output must be a Matrix;
-	StepFunc::func step; //as it's name;
+	UnitPool *Pool;
+	uint32_t Input, Output;
+	StepFunc::func step;
 	LossFunc::func loss;
 
 protected:
-	std::vector<BaseUnit> *Downstream, *Upstream;
+	uint32_t Downstream, Upstream;
 
 protected:
 	MatrixXd W, dW;
@@ -39,17 +42,18 @@ public:
 public:
 	BaseUnit() {
 	}
-	BaseUnit(MatrixXd *_Input, std::vector<BaseUnit> *_Upstream,
-			MatrixXd *_Output, std::vector<BaseUnit> *_Downstream,
+	BaseUnit(UnitPool *_Pool, uint32_t _Input, uint32_t _Upstream,
+			uint32_t _Output, uint32_t _Downstream,
 			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
 			LossFunc::func _loss, double _Learnrate) {
+		Pool = _Pool;
 		modify_count = 0;
 		Learnrate = _Learnrate;
 		Input = _Input;
 		Output = _Output, OutputPos = _Pos;
-		W.setRandom(Input->rows(), Input->cols());
+		W.setRandom(Pool->Mats[Input].rows(), Pool->Mats[Input].cols());
 		W *= Weight_Init_Range;
-		dW.setZero(Input->rows(), Input->cols());
+		dW.setZero(Pool->Mats[Input].rows(), Pool->Mats[Input].cols());
 		bias = ((double) rand() / RAND_MAX * 2 - 1) * Weight_Init_Range;
 
 		Downstream = _Downstream;
@@ -59,8 +63,7 @@ public:
 
 		step = _step, loss = _loss;
 	}
-	virtual void FIXUDlist(std::vector<BaseUnit> *_Upstream,
-			std::vector<BaseUnit> *_Downstream) {
+	virtual void FIXUDlist(uint32_t _Upstream, uint32_t _Downstream) {
 		Downstream = _Downstream;
 		Upstream = _Upstream;
 	}
@@ -86,17 +89,17 @@ public:
 ;
 class DNNOutputUnit: public BaseUnit {
 public:
-	DNNOutputUnit(MatrixXd *_Input, std::vector<BaseUnit> *_Upstream,
-			MatrixXd *_Output, std::pair<uint32_t, uint32_t> _Pos,
+	DNNOutputUnit(UnitPool *Pool, uint32_t _Input, uint32_t _Upstream,
+			uint32_t _Output, std::pair<uint32_t, uint32_t> _Pos,
 			StepFunc::func _step, LossFunc::func _loss, double _Learnrate) :
-			BaseUnit(_Input, _Upstream, _Output, NULL, _Pos, _step, _loss,
+			BaseUnit(Pool, _Input, _Upstream, _Output, -1, _Pos, _step, _loss,
 					_Learnrate) {
 	}
 public:
 	void calc() {
-		Sumd = (W.array() * Input->array()).sum();
+		Sumd = (W.array() * Pool->Mats[Input].array()).sum();
 		Outd = step.f(Sumd);
-		(*Output)(OutputPos.first, OutputPos.second) = Outd;
+		Pool->Mats[Output](OutputPos.first, OutputPos.second) = Outd;
 	}
 	void train(double targetV) {
 		Lossd = -loss.f(targetV, Outd) * step.d(Outd);
@@ -105,7 +108,7 @@ public:
 		modify_count++;
 		for (int i = 0; i < dW.rows(); i++)
 			for (int j = 0; i < dW.cols(); j++)
-				dW(i, j) += Learnrate * (*Input)(i, j) * Lossd;
+				dW(i, j) += Learnrate * Pool->Mats[Input](i, j) * Lossd;
 	}
 	void modify() {
 		for (int i = 0; i < dW.rows(); i++)
@@ -121,20 +124,20 @@ public:
 };
 class DNNInnerUnit: public DNNOutputUnit {
 public:
-	DNNInnerUnit(MatrixXd *_Input, std::vector<BaseUnit> *_Upstream,
-			MatrixXd *_Output, std::vector<BaseUnit> *_Downstream,
+	DNNInnerUnit(UnitPool *Pool, uint32_t _Input, uint32_t _Upstream,
+			uint32_t _Output, uint32_t _Downstream,
 			std::pair<uint32_t, uint32_t> _Pos, StepFunc::func _step,
 			double _Learnrate) :
-			DNNOutputUnit(_Input, _Upstream, _Output, _Pos, _step,
+			DNNOutputUnit(Pool, _Input, _Upstream, _Output, _Pos, _step,
 					empty_loss_func, _Learnrate) {
 		Downstream = _Downstream;
 	}
 public:
 	void train() {
 		Lossd = 0;
-		for (uint32_t u = 0; u < Downstream->size(); u++)
-			Lossd += (*Downstream)[u].returnWeightof(OutputPos)
-					* (*Downstream)[u].Lossd;
+		for (uint32_t u = 0; u < Pool->UDlist[Downstream]->size(); u++)
+			Lossd += (*Pool->UDlist[Downstream])[u].returnWeightof(OutputPos)
+					* (*Pool->UDlist[Downstream])[u].Lossd;
 		Lossd *= -step.d(Outd);
 	}
 };

@@ -11,24 +11,13 @@
 #include "../lib/mem.hpp"
 #include "../lib/Layer.hpp"
 
-static UnitPool Pool;
-
-
-
 class Net {
 protected:
-	uint32_t NetID;
+	UnitPool Pool;
 	std::vector<BaseLayer> *Layers;
 public:
 	Net(uint32_t size, uint32_t Layers[], std::pair<uint32_t, uint32_t> rect[],
-			uint32_t LtM[], uint32_t Msize, MatrixXd Mats[]) {
-		NetID=Pool.newNet();
-		for(int i=0;i<size;i++){
-			uint32_t tl=Pool.newLayer(NetID);
-			if(Layers[i]==__DNN_OUTPUT__){
-				DNNOutputLayer tmp();
-			}
-		}
+			uint32_t Msize, uint32_t LtM[]) {
 	}
 };
 
