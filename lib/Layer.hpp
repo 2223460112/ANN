@@ -13,20 +13,25 @@
 class BaseLayer {
 protected:
 	UnitPool *Pool;
-	BaseLayer *Down;
 	uint32_t Input, Output;
-	uint32_t LayerID;
 public:
 	uint32_t Units;
+	virtual ushort TYPE() {
+		return __BASE__;
+	}
 public:
 	BaseLayer() {
 	}
 	virtual ~BaseLayer() {
 	}
-	virtual void FIXUDlist(BaseLayer *_Down) {
-		Down = _Down;
-		for (uint32_t i = 0; i < Pool->Dlist[Units]->size(); i++)
-			(*Pool->Dlist[Units])[i].FIXDlist(Down->Units);
+	virtual void FIXDlist(uint32_t _Dlist) {
+		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
+			Pool->AtDlist(Units, i).FIXDlist(_Dlist);
+	}
+	virtual void save(FILE *file) {
+		fiputc(Input, file)
+		fiputc(Output, file)
+		fiputc(Units, file)
 	}
 public:
 	virtual void calc() {
@@ -35,28 +40,32 @@ public:
 	}
 	virtual void train(MatrixXd targetV) {
 	}
-	virtual void calcdW() {
+	virtual void calcdW(double Learnrate) {
 	}
 	virtual void modify() {
 	}
 };
 class DNNOutputLayer: public BaseLayer {
 public:
+	ushort TYPE() {
+		return __DNN_OUTPUT__;
+	}
+public:
 	DNNOutputLayer() {
 	}
 	DNNOutputLayer(UnitPool *_Pool, uint32_t _Input, uint32_t _Output,
-			StepFunc::func _step, LossFunc::func _loss, double _Learnrate) {
+			StepFunc::func _step, LossFunc::func _loss) {
 		Pool = _Pool;
+		uint32_t LayerID;
 		LayerID = Pool->newLayer();
 		Input = _Input, Output = _Output;
 		Pool->Pool[LayerID].resize(
 				Pool->Mats[Output].rows() * Pool->Mats[Output].cols());
 		for (uint32_t i = 0, k = 0; i < Pool->Mats[Output].rows(); i++)
 			for (uint32_t j = 0; j < Pool->Mats[Output].cols(); j++, k++) {
-				DNNOutputUnit tmp(_Pool, _Input, _Output,
-						std::pair<uint32_t, uint32_t>(i, j), _step, _loss,
-						_Learnrate);
-				Pool->Pool[LayerID][Pool->newUnit(LayerID)] = tmp;
+				Pool->Pool[LayerID][k] = new DNNOutputUnit(
+						_Pool, _Input, _Output, std::make_pair(i, j), _step,
+						_loss);
 			}
 		Units = Pool->UpdateToDlist(LayerID);
 	}
@@ -64,38 +73,42 @@ public:
 	}
 public:
 	void calc() {
-		for (uint32_t i = 0; i < (*Pool->Dlist[Units]).size(); i++)
-			(*Pool->Dlist[Units])[i].calc();
+		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
+			Pool->AtDlist(Units, i).calc(Input, Output);
 	}
 	void train(MatrixXd targetV) {
-		for (uint32_t i = 0; i < (*Pool->Dlist[Units]).size(); i++)
-			(*Pool->Dlist[Units])[i].train(
-					targetV((*Pool->Dlist[Units])[i].OutputPos.first,
-							(*Pool->Dlist[Units])[i].OutputPos.second));
+		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
+			Pool->AtDlist(Units, i).train(
+					targetV(Pool->AtDlist(Units, i).OutputPos.first,
+							Pool->AtDlist(Units, i).OutputPos.second));
 	}
-	void calcdW() {
-		for (uint32_t i = 0; i < (*Pool->Dlist[Units]).size(); i++)
-			(*Pool->Dlist[Units])[i].calcdW();
+	void calcdW(double Learnrate) {
+		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
+			Pool->AtDlist(Units, i).calcdW(Input, Learnrate);
 	}
 	void modify() {
-		for (uint32_t i = 0; i < (*Pool->Dlist[Units]).size(); i++)
-			(*Pool->Dlist[Units])[i].modify();
+		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
+			Pool->AtDlist(Units, i).modify();
 	}
 };
 class DNNInnerLayer: public DNNOutputLayer {
 public:
+	ushort TYPE() {
+		return __DNN_INNER__;
+	}
+public:
 	DNNInnerLayer(UnitPool *_Pool, uint32_t _Input, uint32_t _Output,
-			StepFunc::func _step, double _Learnrate) {
+			StepFunc::func _step) {
 		Pool = _Pool;
+		uint32_t LayerID;
 		LayerID = Pool->newLayer();
 		Input = _Input, Output = _Output;
 		Pool->Pool[LayerID].resize(
 				Pool->Mats[Output].rows() * Pool->Mats[Output].cols());
 		for (uint32_t i = 0, k = 0; i < Pool->Mats[Output].rows(); i++)
 			for (uint32_t j = 0; j < Pool->Mats[Output].cols(); j++, k++) {
-				DNNInnerUnit tmp(_Pool, _Input, _Output,
-						std::pair<uint32_t, uint32_t>(i, j), _step, _Learnrate);
-				Pool->Pool[LayerID][Pool->newUnit(LayerID)] = tmp;
+				Pool->Pool[LayerID][k] = new DNNInnerUnit(
+						_Pool, _Input, _Output, std::make_pair(i, j), _step);
 			}
 		Units = Pool->UpdateToDlist(LayerID);
 	}
@@ -103,8 +116,8 @@ public:
 	}
 public:
 	void train() {
-		for (uint32_t i = 0; i < (*Pool->Dlist[Units]).size(); i++)
-			(*Pool->Dlist[Units])[i].train();
+		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
+			Pool->AtDlist(Units, i).train();
 	}
 };
 

@@ -24,10 +24,37 @@
 
 #define Weight_Init_Range 0.05
 
+#define Ftype(T) T.f,T.d,T.s
+
 #define size_long_int 4
 #define size_double 8
+#define ushort unsigned short
 
-#define __DNN_OUTPUT__ 0
-#define __DNN_INNER__ 1
+#define __SIGMOND__ 1
+#define __TANH__ 2
+#define __HARD_SIGMOND__ 3
+#define __RELU__ 4
+#define __RELU6__ 5
+#define __ELU__ 7
+#define __SELU__ 8
+#define __LEAKY_RELU__ 9
+#define __R_RELU__ 10
+#define __HARD_SWISH__ 11
+#define __MISH__ 12
+#define __SWISH__ 13
+
+#define __QUAD__ 1
+#define __CROSS_ENTROPY__ 2
+
+#define __BASE__ 0
+#define __DNN_OUTPUT__ 1
+#define __DNN_INNER__ 2
+
+#define fdputc(x,f) for(uint32_t i=0;i<sizeof(double);i++)putc(((unsigned char *)&x)[i],f);
+#define fdgetc(x,f) for(uint32_t i=0;i<sizeof(double);i++)((unsigned char *)&x)[i]=getc(f);
+#define fiputc(x,f) for(uint32_t i=0;i<sizeof(uint32_t);i++)putc(((unsigned char *)&x)[i],f);
+#define figetc(x,f) for(uint32_t i=0;i<sizeof(uint32_t);i++)((unsigned char *)&x)[i]=getc(f);
+#define fbputc(x,f) putc(x,f);
+#define fbgetc(x,f) x=getc(f);
 
 #endif /* ANNCONSTANTDEF_H_ */
