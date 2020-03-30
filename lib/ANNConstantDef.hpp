@@ -30,9 +30,9 @@
 #define size_double 8
 #define ushort unsigned short
 
-#define __SIGMOND__ 1
+#define __SIGMOID__ 1
 #define __TANH__ 2
-#define __HARD_SIGMOND__ 3
+#define __HARD_SIGMOID__ 3
 #define __RELU__ 4
 #define __RELU6__ 5
 #define __ELU__ 7
@@ -44,16 +44,15 @@
 #define __SWISH__ 13
 
 #define __QUAD__ 1
-#define __CROSS_ENTROPY__ 2
 
 #define __BASE__ 0
 #define __DNN_OUTPUT__ 1
 #define __DNN_INNER__ 2
 
-#define fdputc(x,f) for(uint32_t i=0;i<sizeof(double);i++)putc(((unsigned char *)&x)[i],f);
-#define fdgetc(x,f) for(uint32_t i=0;i<sizeof(double);i++)((unsigned char *)&x)[i]=getc(f);
-#define fiputc(x,f) for(uint32_t i=0;i<sizeof(uint32_t);i++)putc(((unsigned char *)&x)[i],f);
-#define figetc(x,f) for(uint32_t i=0;i<sizeof(uint32_t);i++)((unsigned char *)&x)[i]=getc(f);
+#define fdputc(x,f) for(uint32_t fdi=0;fdi<sizeof(double);fdi++)putc(((unsigned char *)&x)[fdi],f);
+#define fdgetc(x,f) for(uint32_t fdi=0;fdi<sizeof(double);fdi++)((unsigned char *)&x)[fdi]=getc(f);
+#define fiputc(x,f) for(uint32_t fii=0;fii<sizeof(uint32_t);fii++)putc(((unsigned char *)&x)[fii],f);
+#define figetc(x,f) for(uint32_t fii=0;fii<sizeof(uint32_t);fii++)((unsigned char *)&x)[fii]=getc(f);
 #define fbputc(x,f) putc(x,f);
 #define fbgetc(x,f) x=getc(f);
 

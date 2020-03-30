@@ -14,23 +14,19 @@ int main() {
 	system("clear");
 	printf("\033[?25l");
 
-	uint32_t Layerstag[] = { __DNN_INNER__, __DNN_INNER__, __DNN_OUTPUT__ };
-	uint32_t LitM[] = { 0, 1, 2 };
-	uint32_t LotM[] = { 1, 2, 3 };
-	std::pair<uint32_t, uint32_t> Mrect[] = { std::make_pair(1, 1),
-			std::make_pair(4, 4), std::make_pair(4, 4), std::make_pair(1, 1) };
-	StepFunc::func S(__SIGMOID__);
-	LossFunc::func L(__QUAD__);
-	Net beastDNN(3, Layerstag, 4, LitM, LotM, Mrect, S, L, 0.03);
+
+	FILE *fi = fopen("./1_sigmoidnetout", "rb");
+	Net beastDNN(fi);
+	fclose(fi);
 
 	FILE *fto = fopen("1_sigmoidtest.csv", "wb");
 
 	Matrix<double, 1, 1> IM, OM, TM;
-	for (uint32_t t = 0; t < 0; t++) {
+	for (uint32_t t = 0; t < 20; t++) {
 		printf("\033[44m\033[30m");
 		printf("turn %3d start       \n", t);
 		printf("\033[42m\033[30m");
-		for (uint32_t p = 0; p < 0; p++) {
+		for (uint32_t p = 0; p < 25; p++) {
 			printf("    patch %d: 000.0%%\n", p);
 			for (uint32_t pos = 1; pos <= 1000; pos++) {
 				if (pos % 50 == 0) {

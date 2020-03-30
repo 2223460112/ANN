@@ -15,9 +15,11 @@ protected:
 	UnitPool Pool;
 	std::vector<BaseLayer*> Layers;
 	double Learnrate;
+	uint32_t *LitM;
+	uint32_t *LotM;
 public:
-	Net(uint32_t _size, uint32_t Layerstag[], uint32_t Msize, uint32_t LitM[],
-			uint32_t LotM[], std::pair<uint32_t, uint32_t> Mrect[],
+	Net(uint32_t _size, uint32_t Layerstag[], uint32_t Msize, uint32_t _LitM[],
+			uint32_t _LotM[], std::pair<uint32_t, uint32_t> Mrect[],
 			StepFunc::func step, LossFunc::func loss, double learnrate) {
 		Pool.Mats.resize(Msize);
 		for (uint32_t i = 0; i < Msize; i++)
@@ -27,21 +29,33 @@ public:
 		Layers.resize(_size);
 		for (uint32_t i = 0; i < _size; i++) {
 			if (Layerstag[i] == __DNN_OUTPUT__) {
-				Layers[i] = new DNNOutputLayer(&Pool, LitM[i], LotM[i], step,
+				Layers[i] = new DNNOutputLayer(&Pool, _LitM[i], _LotM[i], step,
 						loss);
 			} else if (Layerstag[i] == __DNN_INNER__) {
-				Layers[i] = new DNNInnerLayer(&Pool, LitM[i], LotM[i], step);
+				Layers[i] = new DNNInnerLayer(&Pool, _LitM[i], _LotM[i], step);
 			}
 		}
 		for (uint32_t i = 0; i < _size - 1; i++)
-			Layers[i]->FIXDlist(Layers[i + 1]->Units);
+			Layers[i]->FIXDlist(Layers[_LotM[i]]->Units);
+
+		LitM = new uint32_t[_size];
+		LotM = new uint32_t[_size];
+		for (uint32_t i = 0; i < _size; i++) {
+			LotM[i] = _LotM[i];
+			LitM[i] = _LitM[i];
+		}
 	}
-	~Net(){
-		for(uint32_t i=0;i<Layers.size();i++)delete Layers[i];
+	~Net() {
+		for (uint32_t i = 0; i < Layers.size(); i++)
+			delete Layers[i];
+		delete[] LotM;
+		delete[] LitM;
 	}
 public:
 	void save(FILE *file) {
+
 		uint32_t intbuff;
+		ushort bytebuff;
 		//double doublebuff;
 
 		intbuff = Pool.Pool.size();
@@ -50,8 +64,8 @@ public:
 			intbuff = Pool.Pool[i].size();
 			fiputc(intbuff, file)
 			for (uint32_t j = 0; j < Pool.Pool[i].size(); j++) {
-				intbuff = Pool.Pool[i][j]->TYPE();
-				fbputc(intbuff, file)
+				bytebuff = Pool.Pool[i][j]->TYPE();
+				fbputc(bytebuff, file)
 				Pool.Pool[i][j]->save(file);
 			}
 		}
@@ -59,9 +73,6 @@ public:
 		intbuff = Pool.Dlist.size();
 		fiputc(intbuff, file)
 		for (uint32_t i = 0; i < Pool.Dlist.size(); i++) {
-			fiputc(Pool.Dindex[i], file)
-			if (Pool.Dindex[i] != (uint32_t) -1)
-				continue;
 			intbuff = Pool.Dlist[i].size();
 			fiputc(intbuff, file)
 			for (uint32_t j = 0; j < Pool.Dlist[i].size(); j++) {
@@ -81,13 +92,75 @@ public:
 			fiputc(intbuff, file)
 		}
 
-		fiputc(Learnrate, file)
+		fdputc(Learnrate, file)
 
 		for (uint32_t i = 0; i < Layers.size(); i++) {
 			intbuff = Layers[i]->TYPE();
 			fiputc(intbuff, file)
 			Layers[i]->save(file);
+			fiputc(LitM[i], file)
+			fiputc(LotM[i], file)
 		}
+	}
+	Net(FILE *file) {
+		uint32_t intbuff, intbuff2;
+		//double doublebuff;
+		ushort bytebuff;
+
+
+		figetc(intbuff, file);
+		Pool.Pool.resize(intbuff);
+		Layers.resize(intbuff);
+		for (uint32_t i = 0; i < Pool.Pool.size(); i++) {
+			figetc(intbuff, file)
+			Pool.Pool[i].resize(intbuff);
+			for (uint32_t j = 0; j < Pool.Pool[i].size(); j++) {
+				fbgetc(bytebuff, file)
+				if (bytebuff == __DNN_OUTPUT__) {
+					Pool.Pool[i][j] = new DNNOutputUnit(file, &Pool);
+				} else if (bytebuff == __DNN_INNER__) {
+					Pool.Pool[i][j] = new DNNInnerUnit(file, &Pool);
+				}
+			}
+		}
+
+		figetc(intbuff, file)
+		Pool.Dlist.resize(intbuff);
+		for (uint32_t i = 0; i < Pool.Dlist.size(); i++) {
+			figetc(intbuff, file)
+			Pool.Dlist[i].resize(intbuff);
+			for (uint32_t j = 0; j < Pool.Dlist[i].size(); j++) {
+				figetc(Pool.Dlist[i][j].first, file)
+				figetc(Pool.Dlist[i][j].second, file)
+			}
+		}
+
+		figetc(intbuff, file)
+		Pool.Mats.resize(intbuff);
+		for (uint32_t i = 0; i < Pool.Mats.size(); i++) {
+			figetc(intbuff, file)
+			figetc(intbuff2, file)
+			Pool.Mats[i].setZero(intbuff, intbuff2);
+		}
+
+		fdgetc(Learnrate, file)
+
+		LitM = new uint32_t[Layers.size()];
+		LotM = new uint32_t[Layers.size()];
+
+		for (uint32_t i = 0; i < Layers.size(); i++) {
+			figetc(intbuff, file)
+			if (intbuff == __DNN_OUTPUT__)
+				Layers[i] = new DNNOutputLayer(file, &Pool);
+			else if (intbuff == __DNN_INNER__)
+				Layers[i] = new DNNInnerLayer(file, &Pool);
+			if (i == Layers.size() - 1)
+				break;
+			figetc(LitM[i], file)
+			figetc(LotM[i], file)
+		}
+		for (uint32_t i = 0; i < Layers.size(); i++)
+			Layers[i]->FIXload(LitM[i], LotM[i], Layers[LotM[i]]->Units);
 	}
 public:
 	MatrixXd calc(MatrixXd Input) {
@@ -97,7 +170,7 @@ public:
 		return Pool.Mats[Pool.Mats.size() - 1];
 	}
 	void train(MatrixXd TargetV) {
-		Layers[Layers.size() - 1]->train(TargetV);
+		Layers[Layers.size() - 1]->trainT(TargetV);
 		for (uint32_t i = 1; i < Layers.size(); i++)
 			Layers[Layers.size() - i - 1]->train();
 	}

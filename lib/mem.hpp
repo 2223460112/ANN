@@ -20,7 +20,6 @@ class UnitPool {
 public:
 	std::vector<std::vector<BaseUnit*>> Pool;
 	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> Dlist;
-	std::vector<uint32_t> Dindex;
 	std::vector<MatrixXd> Mats;
 public:
 	uint32_t newLayer() {
@@ -38,7 +37,6 @@ public:
 			Dlist[Dlist.size() - 1][i].first = Layer;
 			Dlist[Dlist.size() - 1][i].second = i;
 		}
-		Dindex.push_back(Layer);
 		return Dlist.size() - 1;
 	}
 	BaseUnit& AtDlist(uint32_t Pos, uint32_t iPos) {

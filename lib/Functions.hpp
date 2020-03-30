@@ -18,32 +18,7 @@ typedef double d2dfunc2(double, double);
 typedef void sfunc(FILE*);
 
 namespace StepFunc {
-//li refers to last_in
-class func {
-private:
-	double li = 0, lo = 0;
-	d2dfunc *_f = NULL, *_d = NULL;
-	sfunc *_s = NULL;
-public:
-	func() {
-	}
-	func(d2dfunc *fi, d2dfunc *di, sfunc *si) {
-		li = lo = 0.0;
-		_f = fi, _d = di, _s = si;
-	}
-	double f(double x) {
-		return (*_f)(x, li);
-	}
-	double d(double y) {
-		return (*_d)(y, li);
-	}
-public:
-	void save(FILE *file) {
-		_s(file);
-	}
-};
-class sigmoid {
-public:
+struct sigmoid {
 	static double f(double x, double &li) {
 		return 1.0 / (1.0 + exp(-x));
 	}
@@ -51,11 +26,10 @@ public:
 		return y * (1.0 - y);
 	}
 	static void s(FILE *file) {
-		fbputc(__SIGMOND__, file)
+		putc(__SIGMOID__, file);
 	}
-};
-class tanh {
-public:
+}vsigmoid;
+struct tanh {
 	static double f(double x, double &li) {
 		return std::tanh(x);
 	}
@@ -63,11 +37,10 @@ public:
 		return 1.0 - y * y;
 	}
 	static void s(FILE *file) {
-		fbputc(__TANH__, file)
+		putc(__TANH__, file);
 	}
-};
-class hard_sigmond {
-public:
+}vtanh;
+struct hard_sigmoid {
 	static double f(double x, double &li) {
 		li = x;
 		return std::max(0.0, std::min(1.0, x / 5.0 + 0.5));
@@ -76,11 +49,10 @@ public:
 		return li < -2.5 ? 0.0 : (li > 2.5 ? 0.0 : 0.2);
 	}
 	static void s(FILE *file) {
-		fbputc(__HARD_SIGMOND__, file)
+		putc(__HARD_SIGMOID__, file);
 	}
-};
-class relu {
-public:
+}vhard_sigmoid;
+struct relu {
 	static double f(double x, double &li) {
 		return std::max(0.0, x);
 	}
@@ -88,11 +60,10 @@ public:
 		return y > 0.0 ? 1.0 : 0.0;
 	}
 	static void s(FILE *file) {
-		fbputc(__RELU__, file)
+		putc(__RELU__, file);
 	}
-};
-class relu6 {
-public:
+}vrelu;
+struct relu6 {
 	static double f(double x, double &li) {
 		return std::min(6.0, std::max(0.0, x));
 	}
@@ -100,11 +71,10 @@ public:
 		return y > 6.0 ? 0.0 : y < 0.0 ? 0.0 : 1.0;
 	}
 	static void s(FILE *file) {
-		fbputc(__RELU6__, file)
+		putc(__RELU6__, file);
 	}
-};
-class elu {
-public:
+}vrelu6;
+struct elu {
 	static double f(double x, double &li) {
 		li = x;
 		return x > 0.0 ? x : (exp(x) - 1.0) * elu_alpha;
@@ -113,11 +83,10 @@ public:
 		return li > 0.0 ? 1.0 : f(li, li) + elu_alpha;
 	}
 	static void s(FILE *file) {
-		fbputc(__ELU__, file)
+		putc(__ELU__, file);
 	}
-};
-class selu {
-public:
+}velu;
+struct selu {
 	static double f(double x, double &li) {
 		li = x;
 		return selu_scale * (x > 0.0 ? x : (exp(x) - 1.0) * selu_alpha);
@@ -127,11 +96,10 @@ public:
 
 	}
 	static void s(FILE *file) {
-		fbputc(__SELU__, file)
+		putc(__SELU__, file);
 	}
-};
-class leaky_relu {
-public:
+}vselu;
+struct leaky_relu {
 	static double f(double x, double &li) {
 		return x > 0 ? x : x * leaky_relu_alpha;
 	}
@@ -139,11 +107,10 @@ public:
 		return y <= 0 ? leaky_relu_alpha : 1;
 	}
 	static void s(FILE *file) {
-		fbputc(__LEAKY_RELU__, file)
+		putc(__LEAKY_RELU__, file);
 	}
-};
-class r_relu {
-public:
+}vleaky_relu;
+struct r_relu {
 	static double f(double x, double &li) {
 #ifdef _train_
 		li=r_relu_r;
@@ -156,11 +123,10 @@ public:
 		return y > 0 ? 1 : li;
 	}
 	static void s(FILE *file) {
-		fbputc(__R_RELU__, file)
+		putc(__R_RELU__, file);
 	}
-};
-class hard_swish {
-public:
+}vr_relu;
+struct hard_swish {
 	static double f(double x, double &li) {
 		li = x;
 		return x * std::min(6.0, std::max(0.0, x + 3.0)) / 6.0;
@@ -170,11 +136,10 @@ public:
 				+ li * (li + 3.0 > 6.0 ? 0.0 : li + 3 < 0.0 ? 0.0 : 1.0)) / 6.0;
 	}
 	static void s(FILE *file) {
-		fbputc(__HARD_SWISH__, file)
+		putc(__HARD_SWISH__, file);
 	}
-};
-class Mish {
-public:
+}vhard_swish;
+struct mish {
 	static double f(double x, double &li) {
 		li = x;
 		return x * std::tanh(log(1 + exp(x)));
@@ -187,12 +152,11 @@ public:
 				/ (2 * exp(li) + exp(2.0 * li) + 2);
 	}
 	static void s(FILE *file) {
-		fbputc(__MISH__, file)
+		putc(__MISH__, file);
 	}
-};
+}vmish;
 //swish not fully implemented
-class swish {
-public:
+struct swish {
 	static double f(double x, double &li) {
 		li = x;
 		return x * (1.0 / (1.0 + exp(-x)));
@@ -201,22 +165,106 @@ public:
 		return y + (1 - y) * (1.0 / (1.0 + exp(-li)));
 	}
 	static void s(FILE *file) {
-		fbputc(__SWISH__, file)
+		putc(__SWISH__, file);
+	}
+}vswish;
+//li refers to last_in
+class func {
+private:
+	double li = 0, lo = 0;
+	d2dfunc *_f = NULL, *_d = NULL;
+	sfunc *_s = NULL;
+public:
+	double f(double x) {
+		return (*_f)(x, li);
+	}
+	double d(double y) {
+		return (*_d)(y, li);
+	}
+public:
+	void save(FILE *file) {
+		_s(file);
+	}
+	void load(ushort TYPE) {
+		if (TYPE == __SIGMOID__) {
+			_f = vsigmoid.f;
+			_d = vsigmoid.d;
+			_s = vsigmoid.s;
+		} else if (TYPE == __TANH__) {
+			_f = vtanh.f;
+			_d = vtanh.d;
+			_s = vtanh.s;
+		} else if (TYPE == __RELU__) {
+			_f = vrelu.f;
+			_d = vrelu.d;
+			_s = vrelu.s;
+		} else if (TYPE == __ELU__) {
+			_f = velu.f;
+			_d = velu.d;
+			_s = velu.s;
+		} else if (TYPE == __RELU6__) {
+			_f = vrelu6.f;
+			_d = vrelu6.d;
+			_s = vrelu6.s;
+		} else if (TYPE == __SELU__) {
+			_f = vselu.f;
+			_d = vselu.d;
+			_s = vselu.s;
+		} else if (TYPE == __LEAKY_RELU__) {
+			_f = vleaky_relu.f;
+			_d = vleaky_relu.d;
+			_s = vleaky_relu.s;
+		} else if (TYPE == __HARD_SWISH__) {
+			_f = vhard_swish.f;
+			_d = vhard_swish.d;
+			_s = vhard_swish.s;
+		} else if (TYPE == __MISH__) {
+			_f = vmish.f;
+			_d = vmish.d;
+			_s = vmish.s;
+		} else if (TYPE == __SWISH__) {
+			_f = vswish.f;
+			_d = vswish.d;
+			_s = vswish.s;
+		}
+	}
+	func() {
+	}
+	func(ushort TYPE) {
+		li = lo = 0.0;
+		load(TYPE);
+	}
+	func(FILE *file) {
+		li = lo = 0.0;
+		ushort TYPE = getc(file);
+		load(TYPE);
 	}
 };
-
 }
 
 namespace LossFunc {
+static inline double quad(double y, double a) {
+	return a - y;
+}
+static inline void quad_s(FILE *file) {
+	fbputc(__QUAD__, file)
+}
 class func {
 	d2dfunc2 *_f = NULL;
 public:
 	sfunc *_s = NULL;
+	void load(ushort TYPE){
+		if(TYPE==__QUAD__){
+			_f=quad;_s=quad_s;
+		}
+	}
 	func() {
 	}
-	func(d2dfunc2 *fi, sfunc *si) {
-		_f = fi;
-		_s = si;
+	func(ushort TYPE) {
+		load(TYPE);
+	}
+	func(FILE* file){
+		load(getc(file));
 	}
 	double f(double y, double a) {
 		return _f(y, a);
@@ -225,18 +273,6 @@ public:
 		_s(file);
 	}
 };
-static inline double quad(double y, double a) {
-	return a - y;
-}
-static inline double cross_entropy(double y, double a) {
-	return (y - a) / (1 - a) / a;
-}
-static inline void quad_s(FILE *file) {
-	fbputc(__QUAD__, file)
-}
-static inline void cross_entropy_s(FILE *file) {
-	fbputc(__CROSS_ENTROPY__, file)
-}
 }
 
 const LossFunc::func empty_loss_func;
