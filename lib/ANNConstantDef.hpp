@@ -8,8 +8,6 @@
 #ifndef ANNCONSTANTDEF_H_
 #define ANNCONSTANTDEF_H_
 
-#include <cstdlib>
-
 #define elu_alpha 0.25
 
 #define selu_alpha 1.6732632423543772848170429916717
@@ -44,6 +42,7 @@
 #define __SWISH__ 13
 
 #define __QUAD__ 1
+#define __CROSS_ENTROPY__ 1
 
 #define __BASE__ 0
 #define __DNN_OUTPUT__ 1

@@ -19,56 +19,16 @@ int main() {
 	uint32_t LotM[] = { 1, 2, 3 };
 	std::pair<uint32_t, uint32_t> Mrect[] = { std::make_pair(1, 1),
 			std::make_pair(4, 4), std::make_pair(4, 4), std::make_pair(1, 1) };
-	StepFunc::func S(__SIGMOID__);
+	uint32_t stepfuncs[3]={__SIGMOID__,__SIGMOID__,__SIGMOID__};
 	LossFunc::func L(__QUAD__);
-	Net beastDNN(3, Layerstag, 4, LitM, LotM, Mrect, S, L, 0.03);
+	Net beastDNN(3, Layerstag, 4, LitM, LotM, Mrect, stepfuncs, L, 0.03);
 
-	FILE *fto = fopen("1_sigmoidtest.csv", "wb");
-
-	Matrix<double, 1, 1> IM, OM, TM;
-	for (uint32_t t = 0; t < 0; t++) {
-		printf("\033[44m\033[30m");
-		printf("turn %3d start       \n", t);
-		printf("\033[42m\033[30m");
-		for (uint32_t p = 0; p < 0; p++) {
-			printf("    patch %d: 000.0%%\n", p);
-			for (uint32_t pos = 1; pos <= 1000; pos++) {
-				if (pos % 50 == 0) {
-					printf("\033[1A");
-					printf("    patch %3d: %5.1lf%%\n", p, (double) pos / 10.0);
-				}
-				IM(0, 0) = (tbft - tbfb) * (double) rand() / RAND_MAX + tbfb;
-				OM(0, 0) = tbf(IM(0, 0));
-				beastDNN.calc(IM);
-				beastDNN.train(OM);
-				beastDNN.calcdW();
-				beastDNN.modify();
-			}
-			printf("\033[1A");
-		}
-		putchar('\n');
-		printf("\033[43m\033[30m");
-		double terp2 = 0;
-		for (uint32_t pos = 1; pos <= 10000; pos++) {
-			if (pos % 50 == 0) {
-				printf("\033[1A");
-				printf("test %5.1lf%%          \n", (double) pos / 100.0);
-			}
-			IM(0, 0) = (tbft - tbfb) * (double) pos / 10000.0 + tbfb;
-			OM(0, 0) = tbf(IM(0, 0));
-			TM = beastDNN.calc(IM);
-			fprintf(fto, "%0.8lf,", TM(0, 0));
-			terp2 += (TM(0, 0) - OM(0, 0)) * (TM(0, 0) - OM(0, 0));
-		}
-		putc('\n', fto);
-		printf("\033[1A");
-		printf("result: %6.7lf\n", terp2/10000.0);
-	}
 	FILE *f = fopen("./1_sigmoidnetout", "wb");
 	beastDNN.save(f);
 	fclose(f);
-	fclose(fto);
 
-	printf("\033[0mDone                 \n");
+	printf("\033[0m");
+	printf("\033[?25h");
+	printf("Done\n");
 	return 0;
 }

@@ -35,6 +35,9 @@ The 4-th byte codes the number of dimensions of the vector/matrix: 1 for vectors
 The sizes in each dimension are 4-byte integers (MSB first, high endian, like in most non-Intel processors).
 The data is stored like in a C array, i.e. the index in the last dimension changes the fastest.
 """
+"""
+run函数部分的代码经过修改以合适本项目C++部分的解析器
+"""
  
 import numpy as np
 import struct

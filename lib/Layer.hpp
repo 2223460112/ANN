@@ -33,9 +33,7 @@ public:
 		fiputc(Output, file)
 		fiputc(Units, file)
 	}
-	virtual void FIXload(uint32_t _Input, uint32_t _Output,uint32_t _Dlist){
-		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
-			Pool->AtDlist(Units, i).FIXDlist(_Dlist);
+	virtual void FIXload(uint32_t _Input, uint32_t _Output){
 		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
 			Pool->AtDlist(Units, i).FIXload(_Input,_Output);
 	}

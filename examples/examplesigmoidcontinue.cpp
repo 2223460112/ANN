@@ -16,7 +16,7 @@ int main() {
 
 
 	FILE *fi = fopen("./1_sigmoidnetout", "rb");
-	Net beastDNN(fi);
+	Net beastDNN(fi,0.003);
 	fclose(fi);
 
 	FILE *fto = fopen("1_sigmoidtest.csv", "wb");
@@ -66,5 +66,6 @@ int main() {
 	fclose(fto);
 
 	printf("\033[0mDone                 \n");
+	printf("\033[?25h");
 	return 0;
 }

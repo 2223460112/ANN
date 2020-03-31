@@ -14,7 +14,7 @@ int main() {
 	printf("\033[?25l");
 
 	FILE *fi = fopen("./1_relunetout", "rb");
-	Net beastDNN(fi);
+	Net beastDNN(fi,0.003);
 	fclose(fi);
 
 
@@ -67,5 +67,6 @@ int main() {
 	fclose(fto);
 
 	printf("\033[0mDone                 \n");
+	printf("\033[?25h");
 	return 0;
 }

@@ -8,7 +8,6 @@
 #ifndef LIB_MEM_HPP_
 #define LIB_MEM_HPP_
 
-#include <cstdio>
 #include <vector>
 #include <Eigen/Eigen>
 

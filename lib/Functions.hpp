@@ -8,10 +8,11 @@
 #ifndef FUNCTIONS_HPP_
 #define FUNCTIONS_HPP_
 
+#include "ANNConstantDef.hpp"
+
 #include <cmath>
 #include <algorithm>
-
-#include "ANNConstantDef.hpp"
+#include <cstdio>
 
 typedef double d2dfunc(double, double&);
 typedef double d2dfunc2(double, double);
@@ -28,7 +29,7 @@ struct sigmoid {
 	static void s(FILE *file) {
 		putc(__SIGMOID__, file);
 	}
-}vsigmoid;
+} vsigmoid;
 struct tanh {
 	static double f(double x, double &li) {
 		return std::tanh(x);
@@ -39,7 +40,7 @@ struct tanh {
 	static void s(FILE *file) {
 		putc(__TANH__, file);
 	}
-}vtanh;
+} vtanh;
 struct hard_sigmoid {
 	static double f(double x, double &li) {
 		li = x;
@@ -51,7 +52,7 @@ struct hard_sigmoid {
 	static void s(FILE *file) {
 		putc(__HARD_SIGMOID__, file);
 	}
-}vhard_sigmoid;
+} vhard_sigmoid;
 struct relu {
 	static double f(double x, double &li) {
 		return std::max(0.0, x);
@@ -62,7 +63,7 @@ struct relu {
 	static void s(FILE *file) {
 		putc(__RELU__, file);
 	}
-}vrelu;
+} vrelu;
 struct relu6 {
 	static double f(double x, double &li) {
 		return std::min(6.0, std::max(0.0, x));
@@ -73,7 +74,7 @@ struct relu6 {
 	static void s(FILE *file) {
 		putc(__RELU6__, file);
 	}
-}vrelu6;
+} vrelu6;
 struct elu {
 	static double f(double x, double &li) {
 		li = x;
@@ -85,7 +86,7 @@ struct elu {
 	static void s(FILE *file) {
 		putc(__ELU__, file);
 	}
-}velu;
+} velu;
 struct selu {
 	static double f(double x, double &li) {
 		li = x;
@@ -98,7 +99,7 @@ struct selu {
 	static void s(FILE *file) {
 		putc(__SELU__, file);
 	}
-}vselu;
+} vselu;
 struct leaky_relu {
 	static double f(double x, double &li) {
 		return x > 0 ? x : x * leaky_relu_alpha;
@@ -109,7 +110,7 @@ struct leaky_relu {
 	static void s(FILE *file) {
 		putc(__LEAKY_RELU__, file);
 	}
-}vleaky_relu;
+} vleaky_relu;
 struct r_relu {
 	static double f(double x, double &li) {
 #ifdef _train_
@@ -125,7 +126,7 @@ struct r_relu {
 	static void s(FILE *file) {
 		putc(__R_RELU__, file);
 	}
-}vr_relu;
+} vr_relu;
 struct hard_swish {
 	static double f(double x, double &li) {
 		li = x;
@@ -138,7 +139,7 @@ struct hard_swish {
 	static void s(FILE *file) {
 		putc(__HARD_SWISH__, file);
 	}
-}vhard_swish;
+} vhard_swish;
 struct mish {
 	static double f(double x, double &li) {
 		li = x;
@@ -154,7 +155,7 @@ struct mish {
 	static void s(FILE *file) {
 		putc(__MISH__, file);
 	}
-}vmish;
+} vmish;
 //swish not fully implemented
 struct swish {
 	static double f(double x, double &li) {
@@ -167,7 +168,7 @@ struct swish {
 	static void s(FILE *file) {
 		putc(__SWISH__, file);
 	}
-}vswish;
+} vswish;
 //li refers to last_in
 class func {
 private:
@@ -249,13 +250,23 @@ static inline double quad(double y, double a) {
 static inline void quad_s(FILE *file) {
 	fbputc(__QUAD__, file)
 }
+static inline double cross_entropy(double y, double a) {
+	return -y / a;
+}
+static inline void cross_entropy_s(FILE *file) {
+	fbputc(__CROSS_ENTROPY__, file)
+}
 class func {
 	d2dfunc2 *_f = NULL;
 public:
 	sfunc *_s = NULL;
-	void load(ushort TYPE){
-		if(TYPE==__QUAD__){
-			_f=quad;_s=quad_s;
+	void load(ushort TYPE) {
+		if (TYPE == __QUAD__) {
+			_f = quad;
+			_s = quad_s;
+		} else if (TYPE == __CROSS_ENTROPY__) {
+			_f = quad;
+			_s = quad_s;
 		}
 	}
 	func() {
@@ -263,7 +274,7 @@ public:
 	func(ushort TYPE) {
 		load(TYPE);
 	}
-	func(FILE* file){
+	func(FILE *file) {
 		load(getc(file));
 	}
 	double f(double y, double a) {

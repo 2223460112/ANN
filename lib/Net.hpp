@@ -20,7 +20,7 @@ protected:
 public:
 	Net(uint32_t _size, uint32_t Layerstag[], uint32_t Msize, uint32_t _LitM[],
 			uint32_t _LotM[], std::pair<uint32_t, uint32_t> Mrect[],
-			StepFunc::func step, LossFunc::func loss, double learnrate) {
+			uint32_t stepfuncs[], LossFunc::func loss, double learnrate) {
 		Pool.Mats.resize(Msize);
 		for (uint32_t i = 0; i < Msize; i++)
 			Pool.Mats[i].setZero(Mrect[i].first, Mrect[i].second);
@@ -28,6 +28,7 @@ public:
 		Learnrate = learnrate;
 		Layers.resize(_size);
 		for (uint32_t i = 0; i < _size; i++) {
+			StepFunc::func step(stepfuncs[i]);
 			if (Layerstag[i] == __DNN_OUTPUT__) {
 				Layers[i] = new DNNOutputLayer(&Pool, _LitM[i], _LotM[i], step,
 						loss);
@@ -92,7 +93,7 @@ public:
 			fiputc(intbuff, file)
 		}
 
-		fdputc(Learnrate, file)
+		//fdputc(Learnrate, file)
 
 		for (uint32_t i = 0; i < Layers.size(); i++) {
 			intbuff = Layers[i]->TYPE();
@@ -102,7 +103,7 @@ public:
 			fiputc(LotM[i], file)
 		}
 	}
-	Net(FILE *file) {
+	Net(FILE *file,double _Learnrate) {
 		uint32_t intbuff, intbuff2;
 		//double doublebuff;
 		ushort bytebuff;
@@ -143,7 +144,8 @@ public:
 			Pool.Mats[i].setZero(intbuff, intbuff2);
 		}
 
-		fdgetc(Learnrate, file)
+		//fdgetc(Learnrate, file)
+		Learnrate=_Learnrate;
 
 		LitM = new uint32_t[Layers.size()];
 		LotM = new uint32_t[Layers.size()];
@@ -154,13 +156,13 @@ public:
 				Layers[i] = new DNNOutputLayer(file, &Pool);
 			else if (intbuff == __DNN_INNER__)
 				Layers[i] = new DNNInnerLayer(file, &Pool);
-			if (i == Layers.size() - 1)
-				break;
 			figetc(LitM[i], file)
 			figetc(LotM[i], file)
 		}
+		for (uint32_t i = 0; i < Layers.size()-1; i++)
+			Layers[i]->FIXDlist(Layers[LotM[i]]->Units);
 		for (uint32_t i = 0; i < Layers.size(); i++)
-			Layers[i]->FIXload(LitM[i], LotM[i], Layers[LotM[i]]->Units);
+			Layers[i]->FIXload(LitM[i], LotM[i]);
 	}
 public:
 	MatrixXd calc(MatrixXd Input) {
