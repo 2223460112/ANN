@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-BUILD_MODE = debug
+BUILD_MODE = run
 
 ifeq ($(BUILD_MODE),debug)
 	CFLAGS += -g
@@ -19,14 +19,16 @@ Dep = eigen3
 PKG-FLAGS =	$$(pkg-config --libs --cflags $(Dep))
 
 all:example_1_relu example_1_sigmoid
-
-clean:
-	rm -r debug/1_relu*
-	rm -r debug/1_sigmoid*
 	
 example_1_relu:
-	g++ ./debug/example1relu.cpp $(CFLAGS) $(PKG_FLAGS) -o debug/1_relu
-	g++ ./debug/example1relucontinue.cpp $(CFLAGS) $(PKG_FLAGS) -o debug/1_relu_c
+	g++ ./examples/examplerelu.cpp $(CFLAGS) $(PKG_FLAGS) -o examples/1/relu
+	g++ ./examples/examplerelucontinue.cpp $(CFLAGS) $(PKG_FLAGS) -o examples/1/relu_c
 example_1_sigmoid:
-	g++ ./debug/example1sigmoid.cpp $(CFLAGS) $(PKG_FLAGS) -o debug/1_sigmoid
-	g++ ./debug/example1sigmoidcontinue.cpp $(CFLAGS) $(PKG_FLAGS) -o debug/1_sigmoid_c
+	g++ ./examples/examplesigmoid.cpp $(CFLAGS) $(PKG_FLAGS) -o examples/1/sigmoid
+	g++ ./examples/examplesigmoidcontinue.cpp $(CFLAGS) $(PKG_FLAGS) -o examples/1/sigmoid_c
+
+clean:
+	-rm -r examples/1/relu*
+	-rm -r examples/1/sigmoid*
+	-rm -r examples/1/1_relu*
+	-rm -r examples/1/1_sigmoid*
