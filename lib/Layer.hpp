@@ -11,7 +11,7 @@
 #include "../lib/Unit.hpp"
 
 class BaseLayer {
-protected:
+public:
 	UnitPool *Pool;
 	uint32_t Input, Output;
 public:
@@ -33,9 +33,9 @@ public:
 		fiputc(Output, file)
 		fiputc(Units, file)
 	}
-	virtual void FIXload(uint32_t _Input, uint32_t _Output){
+	virtual void FIXload() {
 		for (uint32_t i = 0; i < Pool->Dlist[Units].size(); i++)
-			Pool->AtDlist(Units, i).FIXload(_Input,_Output);
+			Pool->AtDlist(Units, i).FIXload(Input);
 	}
 	BaseLayer(FILE *file, UnitPool *_Pool) {
 		figetc(Input, file)
@@ -112,6 +112,8 @@ public:
 		return __DNN_INNER__;
 	}
 public:
+	DNNInnerLayer() {
+	}
 	DNNInnerLayer(FILE *file, UnitPool *_Pool) {
 		figetc(Input, file)
 		figetc(Output, file)
@@ -141,5 +143,54 @@ public:
 			Pool->AtDlist(Units, i).train();
 	}
 };
+////////////////////////////////////////////////////////////////////////////////
+class ConvolutionLayer: public BaseLayer {
+public:
+	ConvolutionLayer(FILE *file, UnitPool *_Pool) {
+		figetc(Input, file)
+		figetc(Output, file)
+		figetc(Units, file)
+		Pool = _Pool;
+	}
+	void save(FILE *file) {
+		fiputc(Input, file)
+		fiputc(Output, file)
+		fiputc(Units, file)
+	}
+	virtual ushort TYPE() {
+		return __CONVOLUTION__;
+	}
+	void FIXload() {
+	}
+	void FIXDlist(uint32_t Dlist) {
+		Pool->AtDlist(Units, 0).FIXDlist(Dlist);
+	}
+	ConvolutionLayer(UnitPool *_Pool, uint32_t _Input, uint32_t _Output,
+			std::pair<uint32_t, uint32_t> _kernalsize, StepFunc::func _step,
+			uint32_t _padding, uint32_t _stride, uint32_t _channel) {
+		Pool = _Pool;
+		uint32_t LayerID;
+		LayerID = Pool->newLayer();
+		Input = _Input, Output = _Output;
+		Pool->Pool[LayerID].resize(1);
+		Pool->Pool[LayerID][0] = new ConvolutionUnit(_Pool, _Input, _Output,
+				_kernalsize, _step, _padding, _stride, _channel);
+		Units = Pool->UpdateToDlist(LayerID);
+	}
+public:
+	void calc() {
+		Pool->AtDlist(Units, 0).calc(Input, Output);
+	}
+	void train() {
+		Pool->AtDlist(Units, 0).train();
+	}
+	void calcdW(double Learnrate) {
+		Pool->AtDlist(Units, 0).calcdW(Input, Learnrate);
+	}
+	void modify() {
+		Pool->AtDlist(Units, 0).modify();
+	}
+};
+////////////////////////////////////////////////////////////////////////////////
 
 #endif /* LIB_LAYER_HPP_ */

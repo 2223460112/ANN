@@ -47,6 +47,7 @@
 #define __BASE__ 0
 #define __DNN_OUTPUT__ 1
 #define __DNN_INNER__ 2
+#define __CONVOLUTION__ 3
 
 #define fdputc(x,f) for(uint32_t fdi=0;fdi<sizeof(double);fdi++)putc(((unsigned char *)&x)[fdi],f);
 #define fdgetc(x,f) for(uint32_t fdi=0;fdi<sizeof(double);fdi++)((unsigned char *)&x)[fdi]=getc(f);

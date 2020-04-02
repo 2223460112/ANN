@@ -15,8 +15,6 @@ protected:
 	UnitPool Pool;
 	std::vector<BaseLayer*> Layers;
 	double Learnrate;
-	uint32_t *LitM;
-	uint32_t *LotM;
 public:
 	Net(uint32_t _size, uint32_t Layerstag[], uint32_t Msize, uint32_t _LitM[],
 			uint32_t _LotM[], std::pair<uint32_t, uint32_t> Mrect[],
@@ -38,19 +36,10 @@ public:
 		}
 		for (uint32_t i = 0; i < _size - 1; i++)
 			Layers[i]->FIXDlist(Layers[_LotM[i]]->Units);
-
-		LitM = new uint32_t[_size];
-		LotM = new uint32_t[_size];
-		for (uint32_t i = 0; i < _size; i++) {
-			LotM[i] = _LotM[i];
-			LitM[i] = _LitM[i];
-		}
 	}
 	~Net() {
 		for (uint32_t i = 0; i < Layers.size(); i++)
 			delete Layers[i];
-		delete[] LotM;
-		delete[] LitM;
 	}
 public:
 	void save(FILE *file) {
@@ -99,15 +88,12 @@ public:
 			intbuff = Layers[i]->TYPE();
 			fiputc(intbuff, file)
 			Layers[i]->save(file);
-			fiputc(LitM[i], file)
-			fiputc(LotM[i], file)
 		}
 	}
-	Net(FILE *file,double _Learnrate) {
+	Net(FILE *file, double _Learnrate) {
 		uint32_t intbuff, intbuff2;
 		//double doublebuff;
 		ushort bytebuff;
-
 
 		figetc(intbuff, file);
 		Pool.Pool.resize(intbuff);
@@ -121,6 +107,8 @@ public:
 					Pool.Pool[i][j] = new DNNOutputUnit(file, &Pool);
 				} else if (bytebuff == __DNN_INNER__) {
 					Pool.Pool[i][j] = new DNNInnerUnit(file, &Pool);
+				} else if (bytebuff == __CONVOLUTION__) {
+					Pool.Pool[i][j] = new ConvolutionUnit(file, &Pool);
 				}
 			}
 		}
@@ -145,10 +133,7 @@ public:
 		}
 
 		//fdgetc(Learnrate, file)
-		Learnrate=_Learnrate;
-
-		LitM = new uint32_t[Layers.size()];
-		LotM = new uint32_t[Layers.size()];
+		Learnrate = _Learnrate;
 
 		for (uint32_t i = 0; i < Layers.size(); i++) {
 			figetc(intbuff, file)
@@ -156,13 +141,13 @@ public:
 				Layers[i] = new DNNOutputLayer(file, &Pool);
 			else if (intbuff == __DNN_INNER__)
 				Layers[i] = new DNNInnerLayer(file, &Pool);
-			figetc(LitM[i], file)
-			figetc(LotM[i], file)
+			else if (intbuff == __CONVOLUTION__)
+				Layers[i] = new ConvolutionLayer(file, &Pool);
 		}
-		for (uint32_t i = 0; i < Layers.size()-1; i++)
-			Layers[i]->FIXDlist(Layers[LotM[i]]->Units);
+		for (uint32_t i = 0; i < Layers.size() - 1; i++)
+			Layers[i]->FIXDlist(Layers[Layers[i]->Output]->Units);
 		for (uint32_t i = 0; i < Layers.size(); i++)
-			Layers[i]->FIXload(LitM[i], LotM[i]);
+			Layers[i]->FIXload();
 	}
 public:
 	MatrixXd calc(MatrixXd Input) {
